@@ -6,7 +6,7 @@
 /*   By: gcourrie <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2015/11/30 16:20:37 by gcourrie          #+#    #+#             */
-/*   Updated: 2015/12/02 18:53:37 by gcourrie         ###   ########.fr       */
+/*   Updated: 2016/02/04 19:52:56 by gcourrie         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 #include "get_next_line.h"
 #include "libft/includes/libft.h"
 
-static char		*no_bsn(int fd, int *i)
+static char		*no_bsn(int fd, int *i, char *stackbuffer)
 {
 	char		*buffer;
 	int			ret;
@@ -30,6 +30,8 @@ static char		*no_bsn(int fd, int *i)
 	if (ret <= 0)
 	{
 		*i = 0;
+		if (stackbuffer != NULL)
+			*i = 1;
 		free(buffer);
 		if (ret == -1)
 			*i = -1;
@@ -53,6 +55,11 @@ static char		*found_bsn(char *stackbuffer, int i, char *buffer)
 	ft_strncpy(buffer, stackbuffer, i);
 	ft_strcpy(s2, stackbuffer + i + 1);
 	free(stackbuffer);
+	if (s2[0] == '\0')
+	{
+		free(s2);
+		s2 = NULL;
+	}
 	return (s2);
 }
 
@@ -107,7 +114,7 @@ int				get_next_line(int fd, char **line)
 			stackbuffer = found_bsn(stackbuffer, i, *line);
 			return (1);
 		}
-		if ((*line = no_bsn(fd, &i)) == NULL)
+		if ((*line = no_bsn(fd, &i, stackbuffer)) == NULL)
 		{
 			*line = stackbuffer;
 			stackbuffer = NULL;
@@ -115,5 +122,5 @@ int				get_next_line(int fd, char **line)
 		}
 		stackbuffer = malloc_2_string(stackbuffer, *line);
 	}
-	return (0);
+	return (1);
 }
